@@ -10,18 +10,35 @@ config = run.config
 img_width = X_train.shape[1]
 img_height = X_train.shape[2]
 
+#normalize data
+X_train = X_train.astype('float32')/255
+X_test = X_test.astype('float32')/255
+
 # one hot encode outputs
 y_train = tf.keras.utils.to_categorical(y_train)
 y_test = tf.keras.utils.to_categorical(y_test)
 labels = [str(i) for i in range(10)]
 
+# reshape input data
+X_train = X_train.reshape(
+    X_train.shape[0], img_width, img_height, 1)
+X_test = X_test.reshape(
+    X_test.shape[0], img_width, img_height, 1)
+
 num_classes = y_train.shape[1]
 
 # create model
 model = tf.keras.models.Sequential()
+model.add(tf.keras.layers.Conv2D(16, (3,3)))
+model.add(tf.keras.layers.MaxPooling2D())
+model.add(tf.keras.layers.Conv2D(16, (3,3)))
+model.add(tf.keras.layers.MaxPooling2D())
 model.add(tf.keras.layers.Flatten(input_shape=(img_width, img_height)))
-model.add(tf.keras.layers.Dense(num_classes))
-model.compile(loss='mse', optimizer='adam',
+model.add(tf.keras.layers.Dropout(0.3))
+model.add(tf.keras.layers.Dense(100,activation='relu'))
+model.add(tf.keras.layers.Dense(num_classes,activation='softmax'))
+model.add(tf.keras.layers.Dropout(0.3))
+model.compile(loss='categorical_crossentropy', optimizer='adam',
               metrics=['accuracy'])
 
 # Fit the model
